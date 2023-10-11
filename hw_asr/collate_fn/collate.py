@@ -17,6 +17,7 @@ def collate_fn(dataset_items: List[dict]):
     text_encoded_length_batch = []
     spectrogram_length_batch = []
     max_spectrogram_len = 0
+    audio_path_batch = []
     for item in dataset_items:
         audio_batch.append(item['audio'])
         spectrogram_length_batch.append(item['spectrogram'].size()[-1])
@@ -25,6 +26,7 @@ def collate_fn(dataset_items: List[dict]):
         text_batch.append(item['text'])
         text_encoded_batch.append(item['text_encoded'].squeeze(0))
         text_encoded_length_batch.append(item['text_encoded'].size()[1])
+        audio_path_batch.append(item['audio_path'])
     for item in dataset_items:
         spectrogram_batch.append(
             torch.nn.functional.pad(input=item['spectrogram'], pad=(0, max_spectrogram_len - item['spectrogram'].size()[-1]), mode='constant', value=0).squeeze(0)
@@ -42,5 +44,6 @@ def collate_fn(dataset_items: List[dict]):
         'text': text_batch,
         'text_encoded': text_encoded_batch,
         'text_encoded_length': text_encoded_length_batch,
-        'spectrogram_length': spectrogram_length_batch
+        'spectrogram_length': spectrogram_length_batch,
+        'audio_path': audio_path_batch
     }
