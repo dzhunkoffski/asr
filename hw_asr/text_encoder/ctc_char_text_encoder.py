@@ -1,4 +1,5 @@
 from typing import List, NamedTuple
+from collections import defaultdict
 
 import torch
 
@@ -20,18 +21,55 @@ class CTCCharTextEncoder(CharTextEncoder):
         self.char2ind = {v: k for k, v in self.ind2char.items()}
 
     def ctc_decode(self, inds: List[int]) -> str:
-        # TODO: your code here
-        raise NotImplementedError()
+        text = []
+        prev_char = self.EMPTY_TOK
+        for ind in inds:
+            if ind == self.char2ind[self.EMPTY_TOK]:
+                prev_char = self.ind2char[ind]
+                continue
+            if self.ind2char[ind] != prev_char:
+                text.append(self.ind2char[ind])
+            prev_char = self.ind2char[ind]
+        text = ''.join(text)
+        return text
+    
+    def _truncate(self, state, beamsize):
+        state_list = list(state.items())
+        state_list.sort(key=lambda x: -x[1])
+        return dict(state_list[:beamsize])
+    
+    def _extend_and_merge(self, frame, state, ind2char):
+        new_state = defaultdict(float)
+        for next_char_index, next_char_prob in enumerate(frame):
+            for (pref, last_char), pref_proba in state.items():
+                next_char = ind2char[next_char_index]
+                if next_char == last_char:
+                    new_pref = pref
+                else:
+                    if next_char != self.EMPTY_TOK:
+                        new_pref = pref + next_char
+                    else:
+                        new_pref = pref
+                    last_char = next_char
+                # FIXME: add new_prefix probability, evaluated from LM
+                new_state[(new_pref, last_char)] += pref_proba * next_char_prob
+        return new_state
+
 
     def ctc_beam_search(self, probs: torch.tensor, probs_length,
                         beam_size: int = 100) -> List[Hypothesis]:
         """
         Performs beam search and returns a list of pairs (hypothesis, hypothesis probability).
+        :param probs: probability tensor of shape [time_dimension x n_characters]
+        :param probs_length: some description
+        :param beam_size: beam size
         """
         assert len(probs.shape) == 2
         char_length, voc_size = probs.shape
         assert voc_size == len(self.ind2char)
-        hypos: List[Hypothesis] = []
-        # TODO: your code here
-        raise NotImplementedError
+        state = {('', self.EMPTY_TOK) : 1.0}
+        for frame_index in range(probs_length):
+            state = self._extend_and_merge(probs[frame_index, :], state, self.ind2char)
+            state = self._truncate(state, beam_size)
+        hypos = [Hypothesis(text, prob) for (text, _), prob in state.items()]
         return sorted(hypos, key=lambda x: x.prob, reverse=True)

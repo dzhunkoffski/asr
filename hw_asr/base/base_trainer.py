@@ -137,6 +137,7 @@ class BaseTrainer:
         :param save_best: if True, rename the saved checkpoint to 'model_best.pth'
         """
         arch = type(self.model).__name__
+        # FIXME: save scheduler
         state = {
             "arch": arch,
             "epoch": epoch,
@@ -160,6 +161,7 @@ class BaseTrainer:
 
         :param resume_path: Checkpoint path to be resumed
         """
+        # FIXME: add scheduler loading
         resume_path = str(resume_path)
         self.logger.info("Loading checkpoint: {} ...".format(resume_path))
         checkpoint = torch.load(resume_path, self.device)

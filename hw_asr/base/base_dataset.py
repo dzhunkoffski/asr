@@ -68,6 +68,7 @@ class BaseDataset(Dataset):
             audio_tensor = torchaudio.functional.resample(audio_tensor, sr, target_sr)
         return audio_tensor
 
+    # FIXME: implement batch style augmentations to increase speed
     def process_wave(self, audio_tensor_wave: Tensor):
         with torch.no_grad():
             if self.wave_augs is not None:

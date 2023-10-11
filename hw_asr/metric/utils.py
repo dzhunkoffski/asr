@@ -11,14 +11,9 @@ def calc_cer(target_text: str, predicted_text: str) -> float:
         if predicted_text == '':
             return 0
         return 1
-    
-    target_text = list(target_text)
-    predicted_text = list(predicted_text)
     N = len(target_text)
     edit_distance = editdistance.eval(target_text, predicted_text)
     return edit_distance / N
-
-
 
 def calc_wer(target_text: str, predicted_text: str) -> float:
     """

@@ -152,6 +152,7 @@ class Trainer(BaseTrainer):
             self.optimizer.step()
             if self.lr_scheduler is not None:
                 self.lr_scheduler.step()
+            # FIXME: batch accumulation | grad accumulation
 
         metrics.update("loss", batch["loss"].item())
         for met in self.metrics:
