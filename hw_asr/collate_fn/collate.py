@@ -41,5 +41,6 @@ def collate_fn(dataset_items: List[dict]):
         'duration': duration_batch,
         'text': text_batch,
         'text_encoded': text_encoded_batch,
-        'text_encoded_length': text_encoded_length_batch
+        'text_encoded_length': text_encoded_length_batch,
+        'spectrogram_length': spectrogram_length_batch
     }
