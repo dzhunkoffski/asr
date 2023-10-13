@@ -16,21 +16,24 @@
         "type": "GaussianNoise",
         "args": {
           "mean": 0,
-          "std": 0.05
+          "std": 0.05,
+          "p": 0.15
         }
       },
       {
         "type": "PitchShift",
         "args": {
           "sample_rate": 16000,
-          "n_steps": 4
+          "n_steps": 4,
+          "p": 0.15
         }
       },
       {
         "type": "SpeedPerturbation",
         "args": {
           "orig_freq": 16000,
-          "factors": [0.9, 1.1, 1.0, 1.0, 1.0]
+          "factors": [0.9, 1.1, 1.0, 1.0, 1.0],
+          "p": 0.15
         }
       }
     ],
@@ -38,13 +41,15 @@
       {
         "type": "TimeMasking",
         "args": {
-          "time_mask_param": 80
+          "time_mask_param": 80,
+          "p": 0.15
         }
       },
       {
         "type": "FrequencyMasking",
         "args": {
-          "freq_mask_param": 80
+          "freq_mask_param": 80,
+          "p": 0.15
         }
       }
     ]
