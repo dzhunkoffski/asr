@@ -11,8 +11,43 @@
     "log_spec": true
   },
   "augmentations": {
-    "wave": [],
-    "spectrogram": []
+    "wave": [
+      {
+        "type": "GaussianNoise",
+        "args": {
+          "mean": 0,
+          "std": 0.05
+        }
+      },
+      {
+        "type": "PitchShift",
+        "args": {
+          "sample_rate": 16000,
+          "n_steps": 4
+        }
+      },
+      {
+        "type": "SpeedPerturbation",
+        "args": {
+          "orig_freq": 16000,
+          "factors": [0.9, 1.1, 1.0, 1.0, 1.0]
+        }
+      }
+    ],
+    "spectrogram": [
+      {
+        "type": "TimeMasking",
+        "args": {
+          "time_mask_param": 80
+        }
+      },
+      {
+        "type": "FrequencyMasking",
+        "args": {
+          "freq_mask_param": 80
+        }
+      }
+    ]
   },
   "arch": {
     "type": "BaselineModel",

@@ -119,6 +119,7 @@ class Trainer(BaseTrainer):
                 self._log_scalars(self.train_metrics)
                 # we don't want to reset train metrics at the start of every epoch
                 # because we are interested in recent train metrics
+                # TODO: show audios after augmentations
                 last_train_metrics = self.train_metrics.result()
                 self.train_metrics.reset()
             if batch_idx >= self.len_epoch:
@@ -210,6 +211,7 @@ class Trainer(BaseTrainer):
             **kwargs,
     ):
         # TODO: implement logging of beam search results
+        # FIXME: do not have to process all at once, only examples_to_log chosen one
         if self.writer is None:
             return
         argmax_inds = log_probs.cpu().argmax(-1).numpy()
