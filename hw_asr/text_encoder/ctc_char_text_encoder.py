@@ -1,10 +1,11 @@
 from typing import List, NamedTuple
 from collections import defaultdict
 
+from pyctcdecode import build_ctcdecoder
+
 import torch
 
 from .char_text_encoder import CharTextEncoder
-
 
 class Hypothesis(NamedTuple):
     text: str
@@ -15,10 +16,14 @@ class CTCCharTextEncoder(CharTextEncoder):
     EMPTY_TOK = "^"
 
     def __init__(self, alphabet: List[str] = None):
+        # TODO: load lm via script
         super().__init__(alphabet)
         vocab = [self.EMPTY_TOK] + list(self.alphabet)
         self.ind2char = dict(enumerate(vocab))
         self.char2ind = {v: k for k, v in self.ind2char.items()}
+        self.decoder = build_ctcdecoder(
+            labels=[''] + list(self.alphabet)
+        )
 
     def ctc_decode(self, inds: List[int]) -> str:
         text = []
@@ -37,7 +42,7 @@ class CTCCharTextEncoder(CharTextEncoder):
         state_list = list(state.items())
         state_list.sort(key=lambda x: -x[1])
         return dict(state_list[:beamsize])
-    
+
     def _extend_and_merge(self, frame, state, ind2char):
         new_state = defaultdict(float)
         for next_char_index, next_char_prob in enumerate(frame):
@@ -51,12 +56,11 @@ class CTCCharTextEncoder(CharTextEncoder):
                     else:
                         new_pref = pref
                     last_char = next_char
-                # FIXME: add new_prefix probability, evaluated from LM
                 new_state[(new_pref, last_char)] += pref_proba * next_char_prob
         return new_state
 
 
-    def ctc_beam_search(self, probs: torch.tensor, probs_length,
+    def ctc_beam_search_deprecated(self, probs: torch.tensor, probs_length,
                         beam_size: int = 100) -> List[Hypothesis]:
         """
         Performs beam search and returns a list of pairs (hypothesis, hypothesis probability).
@@ -73,3 +77,8 @@ class CTCCharTextEncoder(CharTextEncoder):
             state = self._truncate(state, beam_size)
         hypos = [Hypothesis(text, prob) for (text, _), prob in state.items()]
         return sorted(hypos, key=lambda x: x.prob, reverse=True)
+    
+    def ctc_beam_search(self, probs: torch.tensor, probs_length, beam_size: int):
+        # TODO: add LM
+        text = self.decoder.decode(torch.softmax(probs[:probs_length, :], -1).cpu().detach().numpy(), beam_width=beam_size)
+        return [Hypothesis(text, 1)]

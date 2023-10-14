@@ -16,6 +16,8 @@ from hw_asr.logger.utils import plot_spectrogram_to_buf
 from hw_asr.metric.utils import calc_cer, calc_wer
 from hw_asr.utils import inf_loop, MetricTracker
 
+import wandb
+
 
 class Trainer(BaseTrainer):
     """
@@ -92,6 +94,7 @@ class Trainer(BaseTrainer):
                     batch,
                     is_train=True,
                     metrics=self.train_metrics,
+                    epoch=epoch
                 )
             except RuntimeError as e:
                 if "out of memory" in str(e) and self.skip_oom:
@@ -114,7 +117,9 @@ class Trainer(BaseTrainer):
                 self.writer.add_scalar(
                     "learning rate", self.lr_scheduler.get_last_lr()[0]
                 )
-                self._log_predictions(**batch)
+                self._log_predictions(**batch, strategy='argmax')
+                if epoch % self.beam_search_logging_freq == 0:
+                    self._log_predictions(**batch, strategy='beam_search')
                 self._log_spectrogram(batch["spectrogram"])
                 self._log_scalars(self.train_metrics)
                 # we don't want to reset train metrics at the start of every epoch
@@ -131,7 +136,7 @@ class Trainer(BaseTrainer):
 
         return log
 
-    def process_batch(self, batch, is_train: bool, metrics: MetricTracker):
+    def process_batch(self, batch, is_train: bool, metrics: MetricTracker, epoch: int):
         batch = self.move_batch_to_device(batch, self.device)
         if is_train:
             self.optimizer.zero_grad()
@@ -156,7 +161,7 @@ class Trainer(BaseTrainer):
 
         metrics.update("loss", batch["loss"].item())
         for met in self.metrics:
-            metrics.update(met.name, met(**batch))
+            metrics.update(met.name, met(**batch, epoch=epoch))
         return batch
 
     def _evaluation_epoch(self, epoch, part, dataloader):
@@ -178,10 +183,13 @@ class Trainer(BaseTrainer):
                     batch,
                     is_train=False,
                     metrics=self.evaluation_metrics,
+                    epoch=epoch
                 )
             self.writer.set_step(epoch * self.len_epoch, part)
             self._log_scalars(self.evaluation_metrics)
-            self._log_predictions(**batch)
+            self._log_predictions(**batch, strategy='argmax')
+            if epoch % self.beam_search_logging_freq == 0:
+                self._log_predictions(**batch, strategy='beam_search')
             self._log_spectrogram(batch["spectrogram"])
 
         # add histogram of model parameters to the tensorboard
@@ -205,36 +213,48 @@ class Trainer(BaseTrainer):
             log_probs,
             log_probs_length,
             audio_path,
+            audio,
+            strategy='argmax',
             examples_to_log=10,
             *args,
             **kwargs,
     ):
-        # TODO: implement logging of beam search results
+        # FIXME: do not have to process all at once, only examples_to_log chosen one
         if self.writer is None:
             return
-        argmax_inds = log_probs.cpu().argmax(-1).numpy()
-        argmax_inds = [
-            inds[: int(ind_len)]
-            for inds, ind_len in zip(argmax_inds, log_probs_length.numpy())
-        ]
-        argmax_texts_raw = [self.text_encoder.decode(inds) for inds in argmax_inds]
-        argmax_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
-        tuples = list(zip(argmax_texts, text, argmax_texts_raw, audio_path))
+        
+        if strategy == 'argmax':
+            argmax_inds = log_probs.cpu().argmax(-1).numpy()
+            argmax_inds = [
+                inds[: int(ind_len)]
+                for inds, ind_len in zip(argmax_inds, log_probs_length.numpy())
+            ]
+            decoded_texts_raw = [self.text_encoder.decode(inds) for inds in argmax_inds]
+            decoded_texts = [self.text_encoder.ctc_decode(inds) for inds in argmax_inds]
+        elif strategy == 'beam_search':
+            decoded_texts_raw = []
+            decoded_texts = []
+            for log_prob_vec, length in zip(log_probs, log_probs_length):
+                decoded_texts.append(self.text_encoder.ctc_beam_search(log_prob_vec, length, beam_size=self.beam_search_size)[0].text)
+                decoded_texts_raw.append("-")
+        
+        tuples = list(zip(decoded_texts, text, decoded_texts_raw, audio_path, list(audio)))
         shuffle(tuples)
         rows = {}
-        for pred, target, raw_pred, audio_path in tuples[:examples_to_log]:
+        for pred, target, raw_pred, audio_path, audio in tuples[:examples_to_log]:
             target = BaseTextEncoder.normalize_text(target)
             wer = calc_wer(target, pred) * 100
             cer = calc_cer(target, pred) * 100
 
             rows[Path(audio_path).name] = {
+                "wav": wandb.Audio(audio.squeeze().numpy(), sample_rate=16000),
                 "target": target,
                 "raw prediction": raw_pred,
                 "predictions": pred,
                 "wer": wer,
                 "cer": cer,
             }
-        self.writer.add_table("predictions", pd.DataFrame.from_dict(rows, orient="index"))
+        self.writer.add_table(f"{strategy}_predictions", pd.DataFrame.from_dict(rows, orient="index"))
 
     def _log_spectrogram(self, spectrogram_batch):
         spectrogram = random.choice(spectrogram_batch.cpu())

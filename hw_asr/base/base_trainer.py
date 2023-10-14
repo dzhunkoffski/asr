@@ -12,7 +12,7 @@ class BaseTrainer:
     Base class for all trainers
     """
 
-    def __init__(self, model: BaseModel, criterion, metrics, optimizer, config, device):
+    def __init__(self, model: BaseModel, criterion, metrics, optimizer, config, device, lr_scheduler=None):
         self.device = device
         self.config = config
         self.logger = config.get_logger("trainer", config["trainer"]["verbosity"])
@@ -21,12 +21,15 @@ class BaseTrainer:
         self.criterion = criterion
         self.metrics = metrics
         self.optimizer = optimizer
+        self.lr_scheduler = lr_scheduler
 
         # for interrupt saving
         self._last_epoch = 0
 
         cfg_trainer = config["trainer"]
         self.epochs = cfg_trainer["epochs"]
+        self.beam_search_logging_freq = cfg_trainer["beam_search_logging_freq"]
+        self.beam_search_size = cfg_trainer['beam_search_size']
         self.save_period = cfg_trainer["save_period"]
         self.monitor = cfg_trainer.get("monitor", "off")
 
@@ -137,7 +140,6 @@ class BaseTrainer:
         :param save_best: if True, rename the saved checkpoint to 'model_best.pth'
         """
         arch = type(self.model).__name__
-        # FIXME: save scheduler
         state = {
             "arch": arch,
             "epoch": epoch,
@@ -146,6 +148,8 @@ class BaseTrainer:
             "monitor_best": self.mnt_best,
             "config": self.config,
         }
+        if self.lr_scheduler is not None:
+            state['lr_scheduler'] = self.lr_scheduler
         filename = str(self.checkpoint_dir / "checkpoint-epoch{}.pth".format(epoch))
         if not (only_best and save_best):
             torch.save(state, filename)
@@ -161,7 +165,6 @@ class BaseTrainer:
 
         :param resume_path: Checkpoint path to be resumed
         """
-        # FIXME: add scheduler loading
         resume_path = str(resume_path)
         self.logger.info("Loading checkpoint: {} ...".format(resume_path))
         checkpoint = torch.load(resume_path, self.device)
@@ -187,6 +190,8 @@ class BaseTrainer:
             )
         else:
             self.optimizer.load_state_dict(checkpoint["optimizer"])
+            if self.lr_scheduler is not None:
+                self.lr_scheduler.load_state_dict(checkpoint["lr_scheduler"])
 
         self.logger.info(
             "Checkpoint loaded. Resume training from epoch {}".format(self.start_epoch)

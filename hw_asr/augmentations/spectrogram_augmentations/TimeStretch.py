@@ -1,18 +1,16 @@
-import torch_audiomentations
+import torchaudio
 from torch import Tensor
-
+from hw_asr.augmentations.base import AugmentationBase
 import random
 
-from hw_asr.augmentations.base import AugmentationBase
-
-
-class Gain(AugmentationBase):
+class TimeStretch(AugmentationBase):
     def __init__(self, p: float, *args, **kwargs):
-        self._aug = torch_audiomentations.Gain(*args, **kwargs)
+        self._aug = torchaudio.transforms.TimeStretch(*args, **kwargs)
         self.p = p
-
+    
     def __call__(self, data: Tensor):
         if random.random() < self.p:
-            x = data.unsqueeze(1)
-            return self._aug(x).squeeze(1)
+            x = data
+            x = self._aug(x)
+            return x
         return data
