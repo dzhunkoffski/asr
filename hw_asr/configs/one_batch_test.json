@@ -80,7 +80,7 @@
       "type": "BeamSearchWERMetric",
       "args": {
         "name": "WER (beam search)",
-        "beam_size": 5,
+        "beam_size": 2,
         "epoch_freq": 5
       }
     },
@@ -88,7 +88,7 @@
       "type": "BeamSearchCERMetric",
       "args": {
         "name": "CER (beam search)",
-        "beam_size": 5,
+        "beam_size": 2,
         "epoch_freq": 5
       }
     }
@@ -104,7 +104,7 @@
     }
   },
   "trainer": {
-    "epochs": 11,
+    "epochs": 50,
     "save_dir": "saved/",
     "save_period": 5,
     "verbosity": 2,
@@ -115,6 +115,6 @@
     "len_epoch": 100,
     "grad_norm_clip": 10,
     "beam_search_logging_freq": 5,
-    "beam_search_size": 5
+    "beam_search_size": 2
   }
 }

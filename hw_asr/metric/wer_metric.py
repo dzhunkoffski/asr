@@ -3,6 +3,8 @@ from typing import List
 import torch
 from torch import Tensor
 
+from tqdm.autonotebook import tqdm
+
 from hw_asr.base.base_metric import BaseMetric
 from hw_asr.base.base_text_encoder import BaseTextEncoder
 from hw_asr.metric.utils import calc_wer
