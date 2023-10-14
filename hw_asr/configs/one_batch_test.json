@@ -11,48 +11,8 @@
     "log_spec": true
   },
   "augmentations": {
-    "wave": [
-      {
-        "type": "GaussianNoise",
-        "args": {
-          "mean": 0,
-          "std": 0.05,
-          "p": 0.15
-        }
-      },
-      {
-        "type": "PitchShift",
-        "args": {
-          "sample_rate": 16000,
-          "n_steps": 4,
-          "p": 0.15
-        }
-      },
-      {
-        "type": "SpeedPerturbation",
-        "args": {
-          "orig_freq": 16000,
-          "factors": [0.9, 1.1, 1.0, 1.0, 1.0],
-          "p": 0.15
-        }
-      }
-    ],
-    "spectrogram": [
-      {
-        "type": "TimeMasking",
-        "args": {
-          "time_mask_param": 80,
-          "p": 0.15
-        }
-      },
-      {
-        "type": "FrequencyMasking",
-        "args": {
-          "freq_mask_param": 80,
-          "p": 0.15
-        }
-      }
-    ]
+    "wave": [],
+    "spectrogram": []
   },
   "arch": {
     "type": "BaselineModel",
@@ -115,6 +75,22 @@
       "args": {
         "name": "CER (argmax)"
       }
+    },
+    {
+      "type": "BeamSearchWERMetric",
+      "args": {
+        "name": "WER (beam search)",
+        "beam_size": 5,
+        "epoch_freq": 5
+      }
+    },
+    {
+      "type": "BeamSearchCERMetric",
+      "args": {
+        "name": "CER (beam search)",
+        "beam_size": 5,
+        "epoch_freq": 5
+      }
     }
   ],
   "lr_scheduler": {
@@ -137,6 +113,8 @@
     "visualize": "wandb",
     "wandb_project": "asr_project",
     "len_epoch": 100,
-    "grad_norm_clip": 10
+    "grad_norm_clip": 10,
+    "beam_search_logging_freq": 5,
+    "beam_search_size": 5
   }
 }

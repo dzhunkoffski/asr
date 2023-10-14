@@ -28,6 +28,8 @@ class BaseTrainer:
 
         cfg_trainer = config["trainer"]
         self.epochs = cfg_trainer["epochs"]
+        self.beam_search_logging_freq = cfg_trainer["beam_search_logging_freq"]
+        self.beam_search_size = cfg_trainer['beam_search_size']
         self.save_period = cfg_trainer["save_period"]
         self.monitor = cfg_trainer.get("monitor", "off")
 
