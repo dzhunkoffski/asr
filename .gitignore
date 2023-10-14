@@ -110,3 +110,14 @@ wandb/
 .vscode/
 .idea/
 __MACOSX/
+
+# archives
+*.zip
+*.rar
+*.7z
+*.gz
+*.tar
+
+# LM weights
+*.bin
+*.arpa
