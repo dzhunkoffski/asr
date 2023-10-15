@@ -116,5 +116,12 @@
     "grad_norm_clip": 10,
     "beam_search_logging_freq": 5,
     "beam_search_size": 2
+  },
+  "text_encoder": {
+    "type": "CTCCharTextEncoder",
+    "args": {
+      "lm_n_gram": "3",
+      "lm_prun_thr": "1e-7"
+    }
   }
 }

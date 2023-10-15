@@ -27,7 +27,7 @@ class BaseTrainer:
         self._last_epoch = 0
 
         cfg_trainer = config["trainer"]
-        self.epochs = cfg_trainer["epochs"]
+        self.epochs = cfg_trainer["epochs"] + 1
         self.beam_search_logging_freq = cfg_trainer["beam_search_logging_freq"]
         self.beam_search_size = cfg_trainer['beam_search_size']
         self.save_period = cfg_trainer["save_period"]
@@ -80,7 +80,7 @@ class BaseTrainer:
         Full training logic
         """
         not_improved_count = 0
-        for epoch in range(self.start_epoch, self.epochs + 1):
+        for epoch in range(self.start_epoch, self.epochs):
             self._last_epoch = epoch
             result = self._train_epoch(epoch)
 
