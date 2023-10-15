@@ -16,6 +16,8 @@ from hw_asr.logger.utils import plot_spectrogram_to_buf
 from hw_asr.metric.utils import calc_cer, calc_wer
 from hw_asr.utils import inf_loop, MetricTracker
 
+import numpy as np
+
 import wandb
 
 
@@ -117,9 +119,12 @@ class Trainer(BaseTrainer):
                 self.writer.add_scalar(
                     "learning rate", self.lr_scheduler.get_last_lr()[0]
                 )
-                self._log_predictions(**batch, strategy='argmax')
+                demonstration_indexes = np.random.choice(batch['text_encoded_length'].size()[0], 10)
+                self._log_predictions(**batch, strategy='argmax', log_ixs=demonstration_indexes)
                 if epoch % self.beam_search_logging_freq == 0:
-                    self._log_predictions(**batch, strategy='beam_search')
+                    self._log_predictions(**batch, strategy='beam_search', log_ixs=demonstration_indexes)
+                if epoch % self.lm_beam_search_logging_freq == 0:
+                    self._log_predictions(**batch, strategy='lm_beam_search', log_ixs=demonstration_indexes)
                 self._log_spectrogram(batch["spectrogram"])
                 self._log_scalars(self.train_metrics)
                 # we don't want to reset train metrics at the start of every epoch
@@ -186,10 +191,13 @@ class Trainer(BaseTrainer):
                     epoch=epoch
                 )
             self.writer.set_step(epoch * self.len_epoch, part)
+            demonstration_indexes = np.random.choice(batch['text_encoded_length'].size()[0], 10)
             self._log_scalars(self.evaluation_metrics)
-            self._log_predictions(**batch, strategy='argmax')
+            self._log_predictions(**batch, strategy='argmax', log_ixs=demonstration_indexes)
             if epoch % self.beam_search_logging_freq == 0:
-                self._log_predictions(**batch, strategy='beam_search')
+                self._log_predictions(**batch, strategy='beam_search', log_ixs=demonstration_indexes)
+            if epoch % self.lm_beam_search_logging_freq == 0:
+                self._log_predictions(**batch, strategy='lm_beam_search', log_ixs=demonstration_indexes)
             self._log_spectrogram(batch["spectrogram"])
 
         # add histogram of model parameters to the tensorboard
@@ -214,6 +222,7 @@ class Trainer(BaseTrainer):
             log_probs_length,
             audio_path,
             audio,
+            log_ixs,
             strategy='argmax',
             examples_to_log=10,
             *args,
@@ -223,6 +232,13 @@ class Trainer(BaseTrainer):
         if self.writer is None:
             return
         
+        assert(strategy in ['argmax', 'beam_search', 'lm_beam_search'])
+        
+        log_probs = log_probs[log_ixs]
+        log_probs_length = log_probs_length[log_ixs]
+        audio_path = [audio_path[i] for i in log_ixs]
+        audio = [audio[i] for i in log_ixs]
+
         if strategy == 'argmax':
             argmax_inds = log_probs.cpu().argmax(-1).numpy()
             argmax_inds = [
@@ -235,8 +251,14 @@ class Trainer(BaseTrainer):
             decoded_texts_raw = []
             decoded_texts = []
             for log_prob_vec, length in zip(log_probs, log_probs_length):
-                decoded_texts.append(self.text_encoder.ctc_beam_search(log_prob_vec, length, beam_size=self.beam_search_size)[0].text)
+                decoded_texts.append(self.text_encoder.ctc_beam_search_without_lm(log_prob_vec, length, beam_size=self.beam_search_size)[0].text)
                 decoded_texts_raw.append("-")
+        elif strategy == 'lm_beam_search':
+            decoded_texts_raw = []
+            decoded_texts = []
+            for log_prob_vec, length in zip(log_probs, log_probs_length):
+                decoded_texts.append(self.text_encoder.ctc_beam_search_with_lm(log_prob_vec, length, beam_size=self.beam_search_size)[0].text)
+                decoded_texts_raw.append("-")     
         
         tuples = list(zip(decoded_texts, text, decoded_texts_raw, audio_path, list(audio)))
         shuffle(tuples)

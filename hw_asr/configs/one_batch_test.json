@@ -6,7 +6,7 @@
     "spectrogram": {
       "type": "MelSpectrogram",
       "args": {
-        "n_mels": 160
+        "n_mels": 128
       }
     },
     "log_spec": true
@@ -16,13 +16,10 @@
     "spectrogram": []
   },
   "arch": {
-    "type": "DeepSpeechV2",
+    "type": "BaselineModel",
     "args": {
-      "n_feats": 160,
-      "rnn_layers": 3,
-      "rnn_dropout": 0,
-      "conv_dropout": 0,
-      "rnn_normalization": true
+      "n_feats": 128,
+      "fc_hidden": 512
     }
   },
   "data": {
@@ -60,7 +57,7 @@
   "optimizer": {
     "type": "SGD",
     "args": {
-      "lr": 1e-3,
+      "lr": 1e-2,
       "momentum": 0.9
     }
   },
@@ -82,27 +79,46 @@
       }
     },
     {
-      "type": "BeamSearchWERMetric",
+      "type": "LMBeamSearchWERMetric",
       "args": {
         "name": "WER (lm beam search)",
         "beam_size": 2,
-        "epoch_freq": 10
+        "epoch_freq": 15
       }
     },
     {
-      "type": "BeamSearchCERMetric",
+      "type": "LMBeamSearchCERMetric",
       "args": {
         "name": "CER (lm beam search)",
         "beam_size": 2,
-        "epoch_freq": 10
+        "epoch_freq": 15
+      }
+    },
+    {
+      "type": "NoLMBeamSearchWERMetric",
+      "args": {
+        "name": "WER (beam search)",
+        "beam_size": 2,
+        "epoch_freq": 5
+      }
+    },
+    {
+      "type": "NoLMBeamSearchCERMetric",
+      "args": {
+        "name": "CER (beam search)",
+        "beam_size": 2,
+        "epoch_freq": 5
       }
     }
   ],
   "lr_scheduler": {
-    "type": "PolynomialLR",
+    "type": "OneCycleLR",
     "args": {
-      "total_iters": 5000,
-      "power": 0.5
+      "steps_per_epoch": 100,
+      "epochs": 50,
+      "anneal_strategy": "cos",
+      "max_lr": 1e-2,
+      "pct_start": 0.2
     }
   },
   "trainer": {
@@ -116,6 +132,8 @@
     "wandb_project": "asr_project",
     "len_epoch": 100,
     "grad_norm_clip": 10,
+    "lm_beam_search_logging_freq": 15,
+    "lm_beam_search_size": 2,
     "beam_search_logging_freq": 10,
     "beam_search_size": 2
   },

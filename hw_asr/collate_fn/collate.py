@@ -2,6 +2,8 @@ import logging
 from typing import List
 import torch
 
+import numpy as np
+
 logger = logging.getLogger(__name__)
 PADDING_VALUE = -1
 
@@ -37,6 +39,7 @@ def collate_fn(dataset_items: List[dict]):
     text_encoded_batch = torch.nn.utils.rnn.pad_sequence(text_encoded_batch, batch_first=True, padding_value=PADDING_VALUE).int()
     text_encoded_length_batch = torch.tensor(text_encoded_length_batch).int()
     spectrogram_length_batch = torch.tensor(spectrogram_length_batch).int()
+
     return {
         'audio': audio_batch,
         'spectrogram': spectrogram_batch,
