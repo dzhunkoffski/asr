@@ -6,7 +6,7 @@ import math
 from hw_asr.base import BaseModel
 
 class DeepSpeechV2(BaseModel):
-    def __init__(self, n_feats, n_class, **batch):
+    def __init__(self, n_feats: int, n_class: int, rnn_layers: int, rnn_dropout: float, **batch):
         super().__init__(n_feats, n_class, **batch)
 
         # Conv layers
@@ -21,16 +21,17 @@ class DeepSpeechV2(BaseModel):
         self.activasion = nn.SiLU()
 
         # Reccurent block
+        # FIXME: apply layernormalization between rnn layers
         self.rnn = nn.GRU(
             input_size=self.n_feats_after_conv(input_feats=n_feats), hidden_size=800, 
-            num_layers=5, batch_first=True, bidirectional=True
+            num_layers=rnn_layers, batch_first=True, bidirectional=True, dropout=rnn_dropout
         )
 
         # FC layer
         self.fc = nn.Linear(800 * 2, 1600)
         self.projection = nn.Linear(1600, n_class)
 
-    def _shape_after_conv(self, n_feats: float, kernel_size: float, padding: float, stride: float, dilation: float):
+    def _shape_after_conv(self, n_feats: torch.tensor, kernel_size: float, padding: float, stride: float, dilation: float):
         # input tensor shape: (N_batch, N_channels, N_freq, N_timesteps)
         return math.floor(
             (n_feats + 2 * padding - dilation * (kernel_size - 1) - 1) / stride + 1
@@ -55,7 +56,6 @@ class DeepSpeechV2(BaseModel):
         # Transform conv output to recurrent blocks
         n_batch, n_channels, n_freq, n_timesteps = x.size()
         x = x.view(n_batch, n_channels * n_freq, n_timesteps).permute(0, 2, 1)
-        print('before rnn', x.size())
         # Input: (n_batch, n_time, n_feats)
         x, h_n = self.rnn(x)
 
@@ -64,16 +64,16 @@ class DeepSpeechV2(BaseModel):
         x = self.activasion(x)
         x = self.projection(x)
 
-        return x
+        return {"logits": x}
     
     def transform_input_lengths(self, input_lengths):
-        input_lengths = self._shape_after_conv(
-            n_feats=input_lengths, kernel_size=11.0, padding=5.0, stride=2.0, dilation=1.0
-        )
-        input_lengths = self._shape_after_conv(
-            n_feats=input_lengths, kernel_size=11.0, padding=5.0, stride=1.0, dilation=1.0
-        )
-        return input_lengths
+        # input_lengths = self._shape_after_conv(
+        #     n_feats=input_lengths, kernel_size=11.0, padding=5.0, stride=2.0, dilation=1.0
+        # )
+        # input_lengths = self._shape_after_conv(
+        #     n_feats=input_lengths, kernel_size=11.0, padding=5.0, stride=1.0, dilation=1.0
+        # )
+        return input_lengths // 2
     
     def n_feats_after_conv(self, input_feats):
         input_feats = self._shape_after_conv(

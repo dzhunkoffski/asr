@@ -6,39 +6,15 @@
     "spectrogram": {
       "type": "MelSpectrogram",
       "args": {
+        "n_mels": 128
       }
     },
     "log_spec": true
   },
   "augmentations": {
     "wave": [
-      {
-        "type": "GaussianNoise",
-        "args": {
-          "mean": 0,
-          "std": 0.05
-        }
-      },
-      {
-        "type": "PitchShift",
-        "args": {
-          "sample_rate": 16000,
-          "n_steps": 4
-        }
-      },
-      {
-        "type": "SpeedPerturbation",
-        "args": {
-          "orig_freq": 16000,
-          "factors": [0.9, 1.1, 1.0, 1.0, 1.0]
-        }
-      }
     ],
     "spectrogram": [
-      {
-        "type": "TimeStretch",
-        "args": {}
-      }
     ]
   },
   "arch": {
@@ -59,8 +35,7 @@
             "part": "train-clean-100",
             "max_audio_length": 20.0,
             "max_text_length": 200
-          },
-          "module": "hw_asr.models"
+          }
         },
         {
           "type": "LibrispeechDataset",

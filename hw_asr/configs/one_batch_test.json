@@ -6,6 +6,7 @@
     "spectrogram": {
       "type": "MelSpectrogram",
       "args": {
+        "n_mels": 160
       }
     },
     "log_spec": true
@@ -15,10 +16,11 @@
     "spectrogram": []
   },
   "arch": {
-    "type": "BaselineModel",
+    "type": "DeepSpeechV2",
     "args": {
-      "n_feats": 128,
-      "fc_hidden": 512
+      "n_feats": 160,
+      "rnn_layers": 1,
+      "rnn_dropout": 0
     }
   },
   "data": {
@@ -56,7 +58,8 @@
   "optimizer": {
     "type": "SGD",
     "args": {
-      "lr": 1e-2
+      "lr": 1e-3,
+      "momentum": 0.9
     }
   },
   "loss": {
@@ -81,7 +84,7 @@
       "args": {
         "name": "WER (beam search)",
         "beam_size": 2,
-        "epoch_freq": 5
+        "epoch_freq": 10
       }
     },
     {
@@ -89,18 +92,15 @@
       "args": {
         "name": "CER (beam search)",
         "beam_size": 2,
-        "epoch_freq": 5
+        "epoch_freq": 10
       }
     }
   ],
   "lr_scheduler": {
-    "type": "OneCycleLR",
+    "type": "PolynomialLR",
     "args": {
-      "steps_per_epoch": 100,
-      "epochs": 50,
-      "anneal_strategy": "cos",
-      "max_lr": 1e-2,
-      "pct_start": 0.2
+      "total_iters": 5000,
+      "power": 0.5
     }
   },
   "trainer": {
@@ -114,7 +114,7 @@
     "wandb_project": "asr_project",
     "len_epoch": 100,
     "grad_norm_clip": 10,
-    "beam_search_logging_freq": 5,
+    "beam_search_logging_freq": 10,
     "beam_search_size": 2
   },
   "text_encoder": {
