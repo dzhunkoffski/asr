@@ -12,46 +12,60 @@
       "log_spec": true
     },
     "augmentations": {
-      "wave": [],
+      "wave": [
+        {
+            "type": "GaussianNoise",
+            "args": {
+                "p": 0.1,
+                "mean": 0,
+                "std": 0.5
+            }
+        },
+        {
+            "type": "SpeedPerturbation",
+            "args": {
+                "p": 0.25,
+                "orig_freq": 16000,
+                "factors": [0.75, 1.25, 0.8, 0.9, 1.1]
+
+            }
+        }
+      ],
       "spectrogram": []
     },
     "arch": {
-      "type": "DeepSpeechV2",
-      "args": {
-        "n_feats": 160,
-        "rnn_layers": 3,
-        "rnn_dropout": 0,
-        "conv_dropout": 0,
-        "rnn_normalization": true
-      }
+        "type": "DeepSpeechV2",
+        "args": {
+            "n_feats": 160,
+            "rnn_layers": 5,
+            "rnn_dropout": 0.1,
+            "conv_dropout": 0.3,
+            "rnn_normalization": true
+        }
     },
     "data": {
       "train": {
-        "batch_size": 10,
-        "num_workers": 0,
+        "batch_size": 32,
+        "num_workers": 5,
         "datasets": [
           {
             "type": "LibrispeechDataset",
             "args": {
-              "part": "dev-clean",
-              "max_audio_length": 20.0,
-              "max_text_length": 200,
-              "limit": 10
+                "part": "train-clean-100",
+                "max_audio_length": 20.0,
+                "max_text_length": 200
             }
           }
         ]
       },
       "val": {
-        "batch_size": 10,
-        "num_workers": 0,
+        "batch_size": 32,
+        "num_workers": 5,
         "datasets": [
           {
             "type": "LibrispeechDataset",
             "args": {
-              "part": "dev-clean",
-              "max_audio_length": 20.0,
-              "max_text_length": 200,
-              "limit": 10
+              "part": "test-clean"
             }
           }
         ]
@@ -60,7 +74,7 @@
     "optimizer": {
       "type": "SGD",
       "args": {
-        "lr": 1e-3,
+        "lr":  0.001,
         "momentum": 0.9
       }
     },
@@ -82,31 +96,47 @@
         }
       },
       {
-        "type": "BeamSearchWERMetric",
+        "type": "LMBeamSearchWERMetric",
         "args": {
           "name": "WER (lm beam search)",
-          "beam_size": 2,
+          "beam_size": 5,
+          "epoch_freq": 25
+        }
+      },
+      {
+        "type": "LMBeamSearchCERMetric",
+        "args": {
+          "name": "CER (lm beam search)",
+          "beam_size": 5,
+          "epoch_freq": 25
+        }
+      },
+      {
+        "type": "NoLMBeamSearchWERMetric",
+        "args": {
+          "name": "WER (beam search)",
+          "beam_size": 5,
           "epoch_freq": 10
         }
       },
       {
-        "type": "BeamSearchCERMetric",
+        "type": "NoLMBeamSearchCERMetric",
         "args": {
-          "name": "CER (lm beam search)",
-          "beam_size": 2,
+          "name": "CER (beam search)",
+          "beam_size": 5,
           "epoch_freq": 10
         }
       }
     ],
     "lr_scheduler": {
-      "type": "PolynomialLR",
-      "args": {
-        "total_iters": 5000,
-        "power": 0.5
-      }
+        "type": "PolynomialLR",
+        "args": {
+            "total_iters": 32000,
+            "power": 0.5
+        }
     },
     "trainer": {
-      "epochs": 50,
+      "epochs": 52,
       "save_dir": "saved/",
       "save_period": 5,
       "verbosity": 2,
@@ -114,16 +144,19 @@
       "early_stop": 100,
       "visualize": "wandb",
       "wandb_project": "asr_project",
-      "len_epoch": 100,
+      "len_epoch": 600,
       "grad_norm_clip": 10,
+      "lm_beam_search_logging_freq": 25,
+      "lm_beam_search_size": 5,
       "beam_search_logging_freq": 10,
-      "beam_search_size": 2
+      "beam_search_size": 5
     },
     "text_encoder": {
       "type": "CTCCharTextEncoder",
       "args": {
         "lm_n_gram": "3",
-        "lm_prun_thr": "1e-7"
+        "lm_prun_thr": "3e-7"
       }
     }
   }
+  
