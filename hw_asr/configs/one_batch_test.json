@@ -20,7 +20,9 @@
     "args": {
       "n_feats": 160,
       "rnn_layers": 3,
-      "rnn_dropout": 0
+      "rnn_dropout": 0,
+      "conv_dropout": 0,
+      "rnn_normalization": true
     }
   },
   "data": {
@@ -80,7 +82,7 @@
       }
     },
     {
-      "type": "LMBeamSearchWERMetric",
+      "type": "BeamSearchWERMetric",
       "args": {
         "name": "WER (lm beam search)",
         "beam_size": 2,
@@ -88,7 +90,7 @@
       }
     },
     {
-      "type": "LMBeamSearchCERMetric",
+      "type": "BeamSearchCERMetric",
       "args": {
         "name": "CER (lm beam search)",
         "beam_size": 2,
