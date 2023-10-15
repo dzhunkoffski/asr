@@ -5,8 +5,33 @@ import math
 
 from hw_asr.base import BaseModel
 
+class RNN_SeqNorm_Block(nn.Module):
+    def __init__(self, input_size: int, hidden_size: int, num_layers: int, dropout: float, batch_first: bool, bidirectional: bool):
+        super().__init__()
+        self.num_layers = num_layers
+        self.rnn = nn.ModuleList(
+            [nn.GRU(
+                input_size=input_size, hidden_size=hidden_size, 
+                num_layers=1, dropout=dropout, batch_first=batch_first, bidirectional=bidirectional
+            )] + [nn.GRU(
+                input_size=2 * hidden_size, hidden_size=hidden_size, 
+                num_layers=1, dropout=dropout, batch_first=batch_first, bidirectional=bidirectional
+                ) for _ in range(num_layers - 1)]
+        )
+        self.ln = nn.ModuleList(
+            [nn.LayerNorm(2 * hidden_size) for _ in range(num_layers)]
+        )
+    
+    def forward(self, x):
+        x, h = self.rnn[0](x)
+        x = self.ln[0](x)
+        for layer_ix in range(1, self.num_layers):
+            x, h = self.rnn[layer_ix](x, h)
+            x = self.ln[layer_ix](x)
+        return x, h
+
 class DeepSpeechV2(BaseModel):
-    def __init__(self, n_feats: int, n_class: int, rnn_layers: int, rnn_dropout: float, **batch):
+    def __init__(self, n_feats: int, n_class: int, rnn_layers: int, rnn_dropout: float, conv_dropout: float, rnn_normalization: bool, **batch):
         super().__init__(n_feats, n_class, **batch)
 
         # Conv layers
@@ -17,15 +42,24 @@ class DeepSpeechV2(BaseModel):
         self.bn1 = nn.BatchNorm2d(num_features=32)
         self.bn2 = nn.BatchNorm2d(num_features=32)
 
+        # Dropout
+        self.dropout = nn.Dropout2d(p=conv_dropout)
+
         # Activasion
-        self.activasion = nn.SiLU()
+        self.activasion = nn.Hardtanh(min_val=0, max_val=20)
 
         # Reccurent block
         # FIXME: apply layernormalization between rnn layers
-        self.rnn = nn.GRU(
-            input_size=self.n_feats_after_conv(input_feats=n_feats), hidden_size=800, 
-            num_layers=rnn_layers, batch_first=True, bidirectional=True, dropout=rnn_dropout
-        )
+        if not rnn_normalization:
+            self.rnn = nn.GRU(
+                input_size=self.n_feats_after_conv(input_feats=n_feats), hidden_size=800, 
+                num_layers=rnn_layers, batch_first=True, bidirectional=True, dropout=rnn_dropout
+            )
+        else:
+            self.rnn = RNN_SeqNorm_Block(
+                input_size=self.n_feats_after_conv(input_feats=n_feats), hidden_size=800,
+                num_layers=rnn_layers, batch_first=True, bidirectional=True, dropout=rnn_dropout
+            )
 
         # FC layer
         self.fc = nn.Linear(800 * 2, 1600)
@@ -48,6 +82,7 @@ class DeepSpeechV2(BaseModel):
         x = self.conv1(x)
         x = self.activasion(x)
         x = self.bn1(x)
+        x = self.dropout(x)
         x = self.conv2(x)
         x = self.activasion(x)
         x = self.bn2(x)

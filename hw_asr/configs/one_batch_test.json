@@ -19,7 +19,7 @@
     "type": "DeepSpeechV2",
     "args": {
       "n_feats": 160,
-      "rnn_layers": 1,
+      "rnn_layers": 3,
       "rnn_dropout": 0
     }
   },
@@ -80,17 +80,17 @@
       }
     },
     {
-      "type": "BeamSearchWERMetric",
+      "type": "LMBeamSearchWERMetric",
       "args": {
-        "name": "WER (beam search)",
+        "name": "WER (lm beam search)",
         "beam_size": 2,
         "epoch_freq": 10
       }
     },
     {
-      "type": "BeamSearchCERMetric",
+      "type": "LMBeamSearchCERMetric",
       "args": {
-        "name": "CER (beam search)",
+        "name": "CER (lm beam search)",
         "beam_size": 2,
         "epoch_freq": 10
       }
