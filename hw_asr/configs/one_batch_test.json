@@ -140,8 +140,7 @@
   "text_encoder": {
     "type": "CTCCharTextEncoder",
     "args": {
-      "lm_n_gram": "3",
-      "lm_prun_thr": "1e-7"
+      "lm_name": "3-gram.pruned.1e-7"
     }
   }
 }

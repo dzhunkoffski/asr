@@ -1,5 +1,5 @@
 {
-    "name": "one_batch_test",
+    "name": "deep_speech_v2",
     "n_gpu": 1,
     "preprocessing": {
       "sr": 16000,
@@ -99,23 +99,23 @@
         "type": "LMBeamSearchWERMetric",
         "args": {
           "name": "WER (lm beam search)",
-          "beam_size": 5,
-          "epoch_freq": 25
+          "beam_size": 10,
+          "epoch_freq": 15
         }
       },
       {
         "type": "LMBeamSearchCERMetric",
         "args": {
           "name": "CER (lm beam search)",
-          "beam_size": 5,
-          "epoch_freq": 25
+          "beam_size": 10,
+          "epoch_freq": 15
         }
       },
       {
         "type": "NoLMBeamSearchWERMetric",
         "args": {
           "name": "WER (beam search)",
-          "beam_size": 5,
+          "beam_size": 10,
           "epoch_freq": 10
         }
       },
@@ -123,7 +123,7 @@
         "type": "NoLMBeamSearchCERMetric",
         "args": {
           "name": "CER (beam search)",
-          "beam_size": 5,
+          "beam_size": 10,
           "epoch_freq": 10
         }
       }
@@ -131,12 +131,12 @@
     "lr_scheduler": {
         "type": "PolynomialLR",
         "args": {
-            "total_iters": 32000,
+            "total_iters": 30001,
             "power": 0.5
         }
     },
     "trainer": {
-      "epochs": 52,
+      "epochs": 50,
       "save_dir": "saved/",
       "save_period": 5,
       "verbosity": 2,
@@ -146,16 +146,15 @@
       "wandb_project": "asr_project",
       "len_epoch": 600,
       "grad_norm_clip": 10,
-      "lm_beam_search_logging_freq": 25,
-      "lm_beam_search_size": 5,
+      "lm_beam_search_logging_freq": 15,
+      "lm_beam_search_size": 10,
       "beam_search_logging_freq": 10,
-      "beam_search_size": 5
+      "beam_search_size": 10
     },
     "text_encoder": {
       "type": "CTCCharTextEncoder",
       "args": {
-        "lm_n_gram": "3",
-        "lm_prun_thr": "3e-7"
+        "lm_name": "3-gram.pruned.1e-7"
       }
     }
   }

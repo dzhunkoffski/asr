@@ -4,6 +4,7 @@ from collections import defaultdict
 from pyctcdecode import build_ctcdecoder
 
 import torch
+import os
 
 from .char_text_encoder import CharTextEncoder
 
@@ -15,20 +16,38 @@ class Hypothesis(NamedTuple):
 class CTCCharTextEncoder(CharTextEncoder):
     EMPTY_TOK = "^"
 
-    def __init__(self, lm_n_gram: str, lm_prun_thr: str, alphabet: List[str] = None):
+    def __init__(self, lm_name: str, alphabet: List[str] = None):
         # FIXME: load lm via script
         super().__init__(alphabet)
         vocab = [self.EMPTY_TOK] + list(self.alphabet)
         self.ind2char = dict(enumerate(vocab))
         self.char2ind = {v: k for k, v in self.ind2char.items()}
 
+        self._convert_lm_to_lower_case(lm_name=lm_name)
+
         self.decoder_with_lm = build_ctcdecoder(
             labels=[''] + list(self.alphabet),
-            kenlm_model_path=f'hw_asr/text_encoder/language_models/{lm_n_gram}-gram.pruned.{lm_prun_thr}.arpa'
+            kenlm_model_path=f'hw_asr/text_encoder/language_models/lowercase_{lm_name}.arpa',
+            unigrams=self._load_unigram_list('hw_asr/text_encoder/language_models/librispeech-vocab.txt')
         )
         self.decoder_without_lm = build_ctcdecoder(
-            labels=[''] + list(self.alphabet)
+            labels=[''] + list(self.alphabet),
+            unigrams=self._load_unigram_list('hw_asr/text_encoder/language_models/librispeech-vocab.txt')
         )
+
+    def _convert_lm_to_lower_case(self, lm_name):
+        orig_lm_path = f'hw_asr/text_encoder/language_models/{lm_name}.arpa'
+        lower_lm_path = f'hw_asr/text_encoder/language_models/lowercase_{lm_name}.arpa'
+        if not os.path.exists(lower_lm_path):
+            with open(orig_lm_path, 'r') as fd_upper:
+                with open(lower_lm_path, 'w') as fd_lower:
+                    for line in fd_upper:
+                        fd_lower.write(line.lower())
+
+    def _load_unigram_list(self, path_file: str) -> List[str]:
+        with open(path_file, 'r') as fd:
+            unigram_list = [t.lower() for t in fd.read().strip().split("\n")]
+        return unigram_list
 
     def ctc_decode(self, inds: List[int]) -> str:
         text = []

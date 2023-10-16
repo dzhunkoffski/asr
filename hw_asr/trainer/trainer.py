@@ -238,6 +238,7 @@ class Trainer(BaseTrainer):
         log_probs_length = log_probs_length[log_ixs]
         audio_path = [audio_path[i] for i in log_ixs]
         audio = [audio[i] for i in log_ixs]
+        text = [text[i] for i in log_ixs]
 
         if strategy == 'argmax':
             argmax_inds = log_probs.cpu().argmax(-1).numpy()

@@ -112,12 +112,11 @@ sympy==1.12
 tensorboard==2.14.0
 tensorboard-data-server==0.7.1
 threadpoolctl==3.2.0
-torch==2.1.0
+torch
 torch-audiomentations==0.11.0
 torch-pitch-shift==1.2.4
-torchaudio==2.1.0
-torchshape==0.0.8
-torchvision==0.16.0
+torchaudio
+torchvision
 tornado==6.3.3
 tqdm==4.66.1
 traitlets==5.11.2
