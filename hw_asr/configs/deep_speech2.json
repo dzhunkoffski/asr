@@ -1,6 +1,6 @@
 {
     "name": "deep_speech_v2",
-    "n_gpu": 2,
+    "n_gpu": 1,
     "preprocessing": {
       "sr": 16000,
       "spectrogram": {
@@ -47,7 +47,7 @@
     "data": {
       "train": {
         "batch_size": 32,
-        "num_workers": 8,
+        "num_workers": 4,
         "datasets": [
           {
             "type": "LibrispeechDataset",
@@ -61,7 +61,7 @@
       },
       "val": {
         "batch_size": 32,
-        "num_workers": 8,
+        "num_workers": 4,
         "datasets": [
           {
             "type": "LibrispeechDataset",
