@@ -1,6 +1,6 @@
 {
     "name": "deep_speech_v2",
-    "n_gpu": 1,
+    "n_gpu": 2,
     "preprocessing": {
       "sr": 16000,
       "spectrogram": {
@@ -17,6 +17,7 @@
             "type": "GaussianNoise",
             "args": {
                 "p": 0.1,
+                "alpha": 0.1,
                 "mean": 0,
                 "std": 0.5
             }
@@ -26,7 +27,7 @@
             "args": {
                 "p": 0.25,
                 "orig_freq": 16000,
-                "factors": [0.75, 1.25, 0.8, 0.9, 1.1]
+                "factors": [0.5, 1.25, 0.8, 0.9, 1.1, 1.5]
 
             }
         }
@@ -38,15 +39,15 @@
         "args": {
             "n_feats": 160,
             "rnn_layers": 5,
-            "rnn_dropout": 0.1,
-            "conv_dropout": 0.3,
+            "rnn_dropout": 0.2,
+            "conv_dropout": 0.2,
             "rnn_normalization": true
         }
     },
     "data": {
       "train": {
         "batch_size": 32,
-        "num_workers": 5,
+        "num_workers": 8,
         "datasets": [
           {
             "type": "LibrispeechDataset",
@@ -60,7 +61,7 @@
       },
       "val": {
         "batch_size": 32,
-        "num_workers": 5,
+        "num_workers": 8,
         "datasets": [
           {
             "type": "LibrispeechDataset",
@@ -154,7 +155,7 @@
     "text_encoder": {
       "type": "CTCCharTextEncoder",
       "args": {
-        "lm_name": "3-gram.pruned.1e-7"
+        "lm_name": "3-gram"
       }
     }
   }
