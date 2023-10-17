@@ -51,6 +51,7 @@ class DeepSpeechV2(BaseModel):
         # Reccurent block
         # FIXME: apply layernormalization between rnn layers
         if not rnn_normalization:
+            raise NotImplementedError
             self.rnn = nn.GRU(
                 input_size=self.n_feats_after_conv(input_feats=n_feats), hidden_size=800, 
                 num_layers=rnn_layers, batch_first=True, bidirectional=True, dropout=rnn_dropout
