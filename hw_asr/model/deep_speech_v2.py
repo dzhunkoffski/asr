@@ -103,13 +103,13 @@ class DeepSpeechV2(BaseModel):
         return {"logits": x}
     
     def transform_input_lengths(self, input_lengths):
-        # input_lengths = self._shape_after_conv(
-        #     n_feats=input_lengths, kernel_size=11.0, padding=5.0, stride=2.0, dilation=1.0
-        # )
-        # input_lengths = self._shape_after_conv(
-        #     n_feats=input_lengths, kernel_size=11.0, padding=5.0, stride=1.0, dilation=1.0
-        # )
-        return input_lengths // 2
+        input_lengths = self._shape_after_conv(
+            n_feats=input_lengths, kernel_size=11.0, padding=5.0, stride=2.0, dilation=1.0
+        )
+        input_lengths = self._shape_after_conv(
+            n_feats=input_lengths, kernel_size=11.0, padding=5.0, stride=1.0, dilation=1.0
+        )
+        return input_lengths
     
     def n_feats_after_conv(self, input_feats):
         input_feats = self._shape_after_conv(
