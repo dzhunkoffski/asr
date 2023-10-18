@@ -61,7 +61,9 @@
     },
     "loss": {
       "type": "CTCLoss",
-      "args": {}
+      "args": {
+        "zero_infinity": true
+      }
     },
     "metrics": [
       {
