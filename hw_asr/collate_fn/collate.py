@@ -5,7 +5,8 @@ import torch
 import numpy as np
 
 logger = logging.getLogger(__name__)
-PADDING_VALUE = -1
+TEXT_PADDING_VALUE = 0
+MELSPEC_PADDING_VALUES = -11
 
 def collate_fn(dataset_items: List[dict]):
     """
@@ -31,12 +32,15 @@ def collate_fn(dataset_items: List[dict]):
         audio_path_batch.append(item['audio_path'])
     for item in dataset_items:
         spectrogram_batch.append(
-            torch.nn.functional.pad(input=item['spectrogram'], pad=(0, max_spectrogram_len - item['spectrogram'].size()[-1]), mode='constant', value=0).squeeze(0)
+            torch.nn.functional.pad(
+                input=item['spectrogram'], pad=(0, max_spectrogram_len - item['spectrogram'].size()[-1]), 
+                mode='constant', value=MELSPEC_PADDING_VALUES
+            ).squeeze(0)
         )
     
     # Padding and converting to tensor
     spectrogram_batch = torch.stack(spectrogram_batch)
-    text_encoded_batch = torch.nn.utils.rnn.pad_sequence(text_encoded_batch, batch_first=True, padding_value=PADDING_VALUE).int()
+    text_encoded_batch = torch.nn.utils.rnn.pad_sequence(text_encoded_batch, batch_first=True, padding_value=TEXT_PADDING_VALUE).int()
     text_encoded_length_batch = torch.tensor(text_encoded_length_batch).int()
     spectrogram_length_batch = torch.tensor(spectrogram_length_batch).int()
 

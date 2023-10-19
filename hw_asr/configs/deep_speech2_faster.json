@@ -132,9 +132,9 @@
       "wandb_project": "asr_project",
       "len_epoch": 600,
       "grad_norm_clip": 10,
-      "lm_beam_search_logging_freq": 20,
+      "lm_beam_search_logging_freq": 10,
       "lm_beam_search_size": 10,
-      "beam_search_logging_freq": 20,
+      "beam_search_logging_freq": 10,
       "beam_search_size": 10
     },
     "text_encoder": {
