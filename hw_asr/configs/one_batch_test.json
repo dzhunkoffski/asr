@@ -140,6 +140,7 @@
   "text_encoder": {
     "type": "CTCCharTextEncoder",
     "args": {
+      "tokenizer": "char",
       "lm_name": "3-gram.pruned.1e-7"
     }
   }
