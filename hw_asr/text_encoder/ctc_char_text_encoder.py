@@ -103,11 +103,11 @@ class CTCCharTextEncoder(CharTextEncoder):
         return sorted(hypos, key=lambda x: x.prob, reverse=True)
     
     def ctc_beam_search_without_lm(self, probs: torch.tensor, probs_length, beam_size: int):
-        text = self.decoder_without_lm.decode(torch.softmax(probs[:probs_length, :], -1).cpu().detach().numpy(), beam_width=beam_size)
+        text = self.decoder_without_lm.decode(torch.exp(probs[:probs_length, :]).cpu().detach().numpy(), beam_width=beam_size)
         return [Hypothesis(text, 1)]
     
     def ctc_beam_search_with_lm(self, probs: torch.tensor, probs_length, beam_size: int):
-        text = self.decoder_with_lm.decode(torch.softmax(probs[:probs_length, :], -1).cpu().detach().numpy(), beam_width=beam_size)
+        text = self.decoder_with_lm.decode(torch.exp(probs[:probs_length, :]).cpu().detach().numpy(), beam_width=beam_size)
         return [Hypothesis(text, 1)]
 
     def ctc_beam_search(self, probs: torch.tensor, probs_length, beam_size: int):

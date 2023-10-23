@@ -12,16 +12,32 @@
     "log_spec": true
   },
   "augmentations": {
-    "wave": [],
-    "spectrogram": []
+    "wave": [
+      {
+        "type": "PitchShift",
+        "args": {
+          "sample_rate": 16000,
+          "n_steps": 4,
+          "p": 0.25
+        }
+      },
+      {
+        "type": "SpeedPerturbation",
+        "args": {
+          "p": 0.25,
+          "orig_freq": 16000,
+          "factors": [0.75, 0.75, 0.9, 1.1, 1.25, 1.25]
+        }
+      }
+    ]
   },
   "arch": {
       "type": "DeepSpeechV2",
       "args": {
           "n_feats": 128,
           "rnn_layers": 5,
-          "rnn_dropout": 0,
-          "conv_dropout": 0,
+          "rnn_dropout": 0.05,
+          "conv_dropout": 0.3,
           "rnn_normalization": true
       }
   },
@@ -53,7 +69,7 @@
       ]
     },
     "test": {
-      "batch_size": 16,
+      "batch_size": 2,
       "num_workers": 4,
       "datasets": [
         {
@@ -89,52 +105,20 @@
       "args": {
         "name": "CER (argmax)"
       }
-    },
-    {
-      "type": "LMBeamSearchWERMetric",
-      "args": {
-        "name": "WER (lm beam search)",
-        "beam_size": 10,
-        "epoch_freq": 40
-      }
-    },
-    {
-      "type": "LMBeamSearchCERMetric",
-      "args": {
-        "name": "CER (lm beam search)",
-        "beam_size": 10,
-        "epoch_freq": 40
-      }
-    },
-    {
-      "type": "NoLMBeamSearchWERMetric",
-      "args": {
-        "name": "WER (beam search)",
-        "beam_size": 10,
-        "epoch_freq": 40
-      }
-    },
-    {
-      "type": "NoLMBeamSearchCERMetric",
-      "args": {
-        "name": "CER (beam search)",
-        "beam_size": 10,
-        "epoch_freq": 40
-      }
     }
   ],
   "lr_scheduler": {
       "type": "OneCycleLR",
       "args": {
-          "max_lr": 1e-3,
+          "max_lr": 3e-4,
           "steps_per_epoch": 600,
-          "epochs": 41,
+          "epochs": 51,
           "pct_start": 0.1,
           "anneal_strategy": "cos"
       }
   },
   "trainer": {
-    "epochs": 40,
+    "epochs": 80,
     "save_dir": "saved/",
     "save_period": 5,
     "verbosity": 2,
@@ -144,10 +128,10 @@
     "wandb_project": "asr_project",
     "len_epoch": 600,
     "grad_norm_clip": 10,
-    "lm_beam_search_logging_freq": 10,
-    "lm_beam_search_size": 10,
-    "beam_search_logging_freq": 10,
-    "beam_search_size": 10
+    "lm_beam_search_logging_freq": 5,
+    "lm_beam_search_size": 20,
+    "beam_search_logging_freq": 5,
+    "beam_search_size": 20
   },
   "text_encoder": {
     "type": "CTCCharTextEncoder",
@@ -156,4 +140,3 @@
     }
   }
 }
-

@@ -56,7 +56,8 @@ def main(config, out_file):
             batch["log_probs_length"] = model.transform_input_lengths(
                 batch["spectrogram_length"]
             )
-            batch["probs"] = batch["log_probs"].exp().cpu()
+            # batch["probs"] = batch["log_probs"].exp().cpu()
+            batch["probs"] = batch["log_probs"].cpu()
             batch["argmax"] = batch["probs"].argmax(-1)
             for i in range(len(batch["text"])):
                 argmax = batch["argmax"][i]
@@ -66,10 +67,10 @@ def main(config, out_file):
                         "ground_truth": batch["text"][i],
                         "pred_text_argmax": text_encoder.ctc_decode(argmax.cpu().numpy()),
                         "pred_text_beam_search_without_lm": text_encoder.ctc_beam_search_without_lm(
-                            batch["probs"][i], batch["log_probs_length"][i], beam_size=10
+                            batch["probs"][i], batch["log_probs_length"][i], beam_size=100
                         )[:10],
                         "pred_text_beam_search_with_lm": text_encoder.ctc_beam_search_with_lm(
-                            batch["probs"][i], batch["log_probs_length"][i], beam_size=10
+                            batch["probs"][i], batch["log_probs_length"][i], beam_size=100
                         )[:10],
                     }
                 )
