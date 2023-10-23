@@ -109,3 +109,6 @@ class CTCCharTextEncoder(CharTextEncoder):
     def ctc_beam_search_with_lm(self, probs: torch.tensor, probs_length, beam_size: int):
         text = self.decoder_with_lm.decode(torch.softmax(probs[:probs_length, :], -1).cpu().detach().numpy(), beam_width=beam_size)
         return [Hypothesis(text, 1)]
+
+    def ctc_beam_search(self, probs: torch.tensor, probs_length, beam_size: int):
+        return self.ctc_beam_search_with_lm(probs=probs, probs_length=probs_length, beam_size=beam_size)

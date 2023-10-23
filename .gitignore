@@ -121,3 +121,4 @@ __MACOSX/
 # LM weights
 *.bin
 *.arpa
+*.pth*
