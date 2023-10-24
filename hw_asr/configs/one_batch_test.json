@@ -140,8 +140,13 @@
   "text_encoder": {
     "type": "CTCCharTextEncoder",
     "args": {
-      "tokenizer": "char",
-      "lm_name": "3-gram.pruned.1e-7"
+      "lm_name": "3-gram.pruned.1e-7",
+      "tokenizer_name": "bpe",
+      "tokenizer_config": {
+        "vocab_size": 100,
+        "model_path": "hw_asr/text_encoder/tokenizers/m_bpe",
+        "train_datasets": ["data/datasets/librispeech/train-clean-100", "data/datasets/librispeech/dev-clean"]
+      }
     }
   }
 }

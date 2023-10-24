@@ -16,9 +16,9 @@ class Hypothesis(NamedTuple):
 class CTCCharTextEncoder(CharTextEncoder):
     EMPTY_TOK = "^"
 
-    def __init__(self, lm_name: str, tokenizer: str = 'char', alphabet: List[str] = None, tokenizer_config: dict = None):
+    def __init__(self, lm_name: str, alphabet: List[str] = None, tokenizer_name: str = 'char', tokenizer_config: dict = None):
         # FIXME: load lm via script
-        super().__init__(tokenizer, alphabet, tokenizer_config)
+        super().__init__(alphabet, tokenizer_name, tokenizer_config)
         vocab = [self.EMPTY_TOK] + list(self.alphabet)
         self.ind2char = dict(enumerate(vocab))
         self.char2ind = {v: k for k, v in self.ind2char.items()}
@@ -28,11 +28,11 @@ class CTCCharTextEncoder(CharTextEncoder):
         self.decoder_with_lm = build_ctcdecoder(
             labels=[''] + list(self.alphabet),
             kenlm_model_path=f'hw_asr/text_encoder/language_models/lowercase_{lm_name}.arpa',
-            unigrams=self._load_unigram_list('hw_asr/text_encoder/language_models/librispeech-vocab.txt') if tokenizer == 'char' else None
+            unigrams=self._load_unigram_list('hw_asr/text_encoder/language_models/librispeech-vocab.txt')
         )
         self.decoder_without_lm = build_ctcdecoder(
             labels=[''] + list(self.alphabet),
-            unigrams=self._load_unigram_list('hw_asr/text_encoder/language_models/librispeech-vocab.txt') if tokenizer == 'char' else None
+            unigrams=self._load_unigram_list('hw_asr/text_encoder/language_models/librispeech-vocab.txt')
         )
 
     def _convert_lm_to_lower_case(self, lm_name):
@@ -60,6 +60,7 @@ class CTCCharTextEncoder(CharTextEncoder):
                 text.append(self.ind2char[ind])
             prev_char = self.ind2char[ind]
         text = ''.join(text)
+        text = text.replace('▁', ' ')[1:]
         return text
     
     def _truncate(self, state, beamsize):

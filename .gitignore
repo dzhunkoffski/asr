@@ -122,3 +122,5 @@ __MACOSX/
 *.bin
 *.arpa
 *.pth*
+*.model
+*.vocab
