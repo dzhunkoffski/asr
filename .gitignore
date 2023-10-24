@@ -124,3 +124,6 @@ __MACOSX/
 *.pth*
 *.model
 *.vocab
+
+# Do not ignore
+!data/datasets/train.txt

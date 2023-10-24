@@ -145,7 +145,8 @@
       "tokenizer_config": {
         "vocab_size": 100,
         "model_path": "hw_asr/text_encoder/tokenizers/m_bpe",
-        "train_datasets": ["data/datasets/librispeech/train-clean-100", "data/datasets/librispeech/dev-clean"]
+        "train_datasets": ["data/datasets/librispeech/train-clean-100"],
+        "train_text_path": "data/datasets/train.txt"
       }
     }
   }
