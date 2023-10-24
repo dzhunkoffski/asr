@@ -59,7 +59,7 @@ class CharTextEncoder(BaseTextEncoder):
         else:
             if 'train_text_path' not in tokenizer_config:
                 self._prepare_training_texts(tokenizer_config['train_datasets'])
-            spm.SentencePieceTrainer.train(f'--input={ --model_prefix={tokenizer_config["model_path"]} --vocab_size={tokenizer_config["vocab_size"]} --model_type=bpe --unk_id=0 --bos_id=-1 --eos_id=-1')
+            spm.SentencePieceTrainer.train(f'--input=train.txt --model_prefix={tokenizer_config["model_path"]} --vocab_size={tokenizer_config["vocab_size"]} --model_type=bpe --unk_id=0 --bos_id=-1 --eos_id=-1')
             self.tokenizer = spm.SentencePieceProcessor()
             self.tokenizer.load(tokenizer_config['model_path'] + '.model')
             return  [self.tokenizer.id_to_piece(i) for i in range(self.tokenizer.get_piece_size())]
