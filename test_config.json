@@ -136,7 +136,8 @@
   "text_encoder": {
     "type": "CTCCharTextEncoder",
     "args": {
-      "lm_name": "3-gram"
+      "lm_name": "3-gram",
+      "tokenizer_config": "char"
     }
   }
 }
