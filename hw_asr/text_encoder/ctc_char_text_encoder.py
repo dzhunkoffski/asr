@@ -93,6 +93,7 @@ class CTCCharTextEncoder(CharTextEncoder):
         :param probs_length: some description
         :param beam_size: beam size
         """
+        probs = torch.exp(probs[:probs_length, :]).cpu().detach().numpy()
         assert len(probs.shape) == 2
         char_length, voc_size = probs.shape
         assert voc_size == len(self.ind2char)
