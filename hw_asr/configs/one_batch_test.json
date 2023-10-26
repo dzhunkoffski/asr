@@ -12,7 +12,16 @@
     "log_spec": true
   },
   "augmentations": {
-    "wave": [],
+    "wave": [
+      {
+        "type": "Gain",
+        "args": {
+          "p": 1.0,
+          "min_gain_in_db": -18,
+          "max_gain_in_db": 6
+        }
+      }
+    ],
     "spectrogram": []
   },
   "arch": {
@@ -90,15 +99,15 @@
       "type": "LMBeamSearchCERMetric",
       "args": {
         "name": "CER (lm beam search)",
-        "beam_size": 2,
-        "epoch_freq": 15
+        "beam_size": 5,
+        "epoch_freq": 5
       }
     },
     {
       "type": "NoLMBeamSearchWERMetric",
       "args": {
         "name": "WER (beam search)",
-        "beam_size": 2,
+        "beam_size": 5,
         "epoch_freq": 5
       }
     },
@@ -140,14 +149,8 @@
   "text_encoder": {
     "type": "CTCCharTextEncoder",
     "args": {
-      "lm_name": "3-gram.pruned.1e-7",
-      "tokenizer_name": "bpe",
-      "tokenizer_config": {
-        "vocab_size": 100,
-        "model_path": "hw_asr/text_encoder/tokenizers/m_bpe",
-        "train_datasets": ["data/datasets/librispeech/train-clean-100"],
-        "train_text_path": "data/datasets/train.txt"
-      }
+      "lm_name": "3-gram",
+      "tokenizer_name": "char"
     }
   }
 }
