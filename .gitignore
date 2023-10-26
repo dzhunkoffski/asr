@@ -125,5 +125,7 @@ __MACOSX/
 *.model
 *.vocab
 
+checkpoints/config.json
+
 # Do not ignore
 !data/datasets/train.txt

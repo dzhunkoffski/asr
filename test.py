@@ -67,10 +67,10 @@ def main(config, out_file):
                         "ground_truth": batch["text"][i],
                         "pred_text_argmax": text_encoder.ctc_decode(argmax.cpu().numpy()),
                         "pred_text_beam_search_without_lm": text_encoder.ctc_beam_search_without_lm(
-                            batch["probs"][i], batch["log_probs_length"][i], beam_size=15
+                            batch["probs"][i], batch["log_probs_length"][i], beam_size=25
                         )[:10],
                         "pred_text_beam_search_with_lm": text_encoder.ctc_beam_search_with_lm(
-                            batch["probs"][i], batch["log_probs_length"][i], beam_size=15
+                            batch["probs"][i], batch["log_probs_length"][i], beam_size=25
                         )[:10],
                         "pred_text_diy_beamsearch": text_encoder.ctc_beam_search_deprecated(
                             batch['probs'][i], batch['log_probs_length'][i], beam_size=3
