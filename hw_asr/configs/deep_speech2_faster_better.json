@@ -67,6 +67,18 @@
             }
           }
         ]
+      },
+      "test": {
+        "batch_size": 10,
+        "num_workers": 4,
+        "datasets": [
+          {
+            "type": "LibrispeechDataset",
+            "args": {
+              "part": "test-clean"
+            }
+          }
+        ]
       }
     },
     "optimizer": {

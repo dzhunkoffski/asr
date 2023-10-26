@@ -150,10 +150,10 @@ class BaseTrainer:
             "monitor_best": self.mnt_best,
             "config": self.config,
         }
-        # if self.lr_scheduler is not None:
-        #     state['lr_scheduler'] = self.lr_scheduler.state_dict()
         if self.lr_scheduler is not None:
-            state['lr_scheduler'] = self.lr_scheduler
+            state['lr_scheduler'] = self.lr_scheduler.state_dict()
+        # if self.lr_scheduler is not None:
+        #     state['lr_scheduler'] = self.lr_scheduler
         filename = str(self.checkpoint_dir / "checkpoint-epoch{}.pth".format(epoch))
         if not (only_best and save_best):
             torch.save(state, filename)
