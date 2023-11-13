@@ -42,41 +42,15 @@
       }
   },
   "data": {
-    "train": {
-      "batch_size": 20,
-      "num_workers": 4,
-      "datasets": [
-        {
-          "type": "LibrispeechDataset",
-          "args": {
-              "part": "test-clean",
-              "max_audio_length": 20.0,
-              "max_text_length": 200
-          }
-        }
-      ]
-    },
-    "val": {
-      "batch_size": 16,
-      "num_workers": 4,
-      "datasets": [
-        {
-          "type": "LibrispeechDataset",
-          "args": {
-            "part": "test-clean"
-          }
-        }
-      ]
-    },
     "test": {
       "batch_size": 1,
       "num_workers": 0,
       "datasets": [
         {
-          "type": "LibrispeechDataset",
-          "args": {
-            "part": "test-clean"
-          }
+            "type": "JSONDataset",
+            "args": {
+                "index_path": "/home/dzhunk/University/dl-audio/speaker_separation/predictions/custom_noise_libr.json"
+            }
         }
       ]
     }

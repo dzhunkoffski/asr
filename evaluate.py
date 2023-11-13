@@ -19,7 +19,8 @@ def main(prediction_path: str):
         predicted_argmax = item['pred_text_argmax']
         predicted_beam = item['pred_text_beam_search_without_lm'][0][0]
         predicted_lmbeam = item['pred_text_beam_search_with_lm'][0][0]
-        predicted_diybeam = item['pred_text_diy_beamsearch'][0][0]
+        if 'pred_text_diy_beamsearch' in item:
+            predicted_diybeam = item['pred_text_diy_beamsearch'][0][0]
 
         wer_argmax += calc_wer(target_text, predicted_argmax)
         cer_argmax += calc_cer(target_text, predicted_argmax)
@@ -30,8 +31,9 @@ def main(prediction_path: str):
         wer_lmbeam += calc_wer(target_text, predicted_lmbeam)
         cer_lmbeam += calc_cer(target_text, predicted_lmbeam)
 
-        diy_wer_beam += calc_wer(target_text, predicted_diybeam)
-        diy_cer_beam += calc_cer(target_text, predicted_diybeam)
+        if 'pred_text_diy_beamsearch' in item:
+            diy_wer_beam += calc_wer(target_text, predicted_diybeam)
+            diy_cer_beam += calc_cer(target_text, predicted_diybeam)
     
     wer_argmax /= len(predictions)
     cer_argmax /= len(predictions)
