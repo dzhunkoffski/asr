@@ -38,4 +38,4 @@ You will get `output.json` with predicions. The following command will evaluate 
 ```bash
 python evaluate.py --predictions output.json
 ```
-More details on model and training can be found here (TODO WANDB REPORT link).
+More details on model and training can be found [here](https://wandb.ai/dzhunkoffski/asr_project/reports/Report--Vmlldzo2NTc3OTEw).
